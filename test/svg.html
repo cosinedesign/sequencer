@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <script src="../lib/cosinedesign.utility.js"></script>
+    <script src="../lib/cosinedesign.svg.js"></script>
+    <script src="../lib/cosinedesign.mvc.js"></script>
+    <script src="../source/cosine.xzerox.config.js"></script>
+    <script src="../source/cosine.xzerox.js"></script>
+    <script src="../source/cosine.xzerox.controllers.js"></script>
+
+    <div id="container"></div>
+    <script>
+
+        // TODO: Identify the active sequence on init
+        // TODO: When active sequence changes, button bar should re-render
+        // TODO: Render action's colors (gradients, et al)
+        // TODO:
+        // TODO: Each view should remember svg objects created, so they can destroy / re-render just changed items
+        // TODO: create an 'onBarChange' event that re-renders the bar
+
+
+
+        // lifecycle
+        // instantiate: set reference to SVG target
+        // init: build shapes, store shapes, get total height/width
+        // render
+        (function (views, pattern, svg) {
+            var container = document.getElementById('container'),
+                host = svg.create.svg({
+                        width: 800,
+                        height: 600,
+                        fill: '#00FF00',
+                        shapes: [],
+                        gradients: [ {id: 'pinkMorph', stops: [
+                            { id: 1, offset: "30%", "stop-color": "white" },
+                            { id: 2, offset: "90%", "stop-color": "#FF00FF" }]}
+                        ],
+                        onShapeCreated: function (item, index) {
+                            utils.ui.addClick(item, function () {
+                                buttonClick(item, index);
+                            });
+                        }
+                    });
+
+            // Wire up container references
+            container.appendChild(host);
+            views.buttonBar.el = container;
+            // Assign the SVG host element
+            views.buttonBar.svg = host;
+            views.bar.svg = host;
+
+
+            pattern.init();
+        })(
+            cosine.xzerox.views,
+            cosine.xzerox.controllers.pattern,
+            cosinedesign.svg
+        );
+
+    </script>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 # sequencer
 
 
-# Pattern Format
+## Pattern Format
 
 - pattern
   - bars[]
@@ -15,11 +15,15 @@
             - options
               - {anything - depends on the action's requirements}
 
-The pattern format should be interpreted into a control format, which flattens the parallel sequences into 'frames' based on starting step:
+## Pattern Format for Sequence Messenger 
+### (thing that sends commands out to devices per sequence)
 
-- 4 bar patterns of 16 steps would become 64 frames
+The pattern format should be interpreted into a control format, which flattens the parallel sequences into 'frames' based on starting step. For excample, 4 bar patterns of 16 steps would compile into 64 frames.
+
+## Compiled Sequence
 
 - sequence
-  - frame
-    - channel
-      - action
+  - frames[]
+    - frame
+      - channelId
+        - action

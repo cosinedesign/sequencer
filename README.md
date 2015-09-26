@@ -3,7 +3,7 @@
 
 # Pattern Format
 
-'''
+```
 pattern
 ---bars[]
 ------bar
@@ -15,4 +15,4 @@ pattern
 ------------------name
 ------------------options
 ---------------------{anything - depends on the action's requirements}
-'''
+```

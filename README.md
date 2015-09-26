@@ -3,6 +3,7 @@
 
 TODO: Specify the sequence format
 
+''' 
 pattern
 ---bars[]
 ------bar
@@ -14,3 +15,4 @@ pattern
 ------------------name
 ------------------options
 ---------------------{anything - depends on the action's requirements}
+'''

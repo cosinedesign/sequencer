@@ -1,9 +1,9 @@
 # sequencer
 
 
-TODO: Specify the sequence format
+# Pattern Format
 
-''' 
+'''
 pattern
 ---bars[]
 ------bar

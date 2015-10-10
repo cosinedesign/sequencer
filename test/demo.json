@@ -1,0 +1,103 @@
+{
+    "name": "default",
+    "bars": [
+        {
+            "sequences": [
+                [
+                    {
+                        "step": 0,
+                        "length": 4
+                    },
+                    {
+                        "step": 4,
+                        "length": 4,
+                        "name": "Morph Color",
+                        "type": "morphColor",
+                        "options": {
+                            "color1": "#FF0000",
+                            "color2": "#FF00FF"
+                        }
+                    },
+                    {
+                        "step": 8,
+                        "length": 1,
+                        "name": "Morph Color",
+                        "type": "morphColor",
+                        "options": {
+                            "color1": "#FF00FF",
+                            "color2": "#0000FF"
+                        }
+                    },
+                    {
+                        "step": 9,
+                        "name": "Morph Color",
+                        "type": "morphColor",
+                        "options": {
+                            "color1": "#FF00FF",
+                            "color2": "#0000FF"
+                        },
+                        "length": 1
+                    },
+                    {
+                        "step": 10,
+                        "name": "Morph Color",
+                        "type": "morphColor",
+                        "options": {
+                            "color1": "#FF00FF",
+                            "color2": "#0000FF"
+                        },
+                        "length": 6
+                    }
+                ],
+                [
+                    {
+                        "step": 0,
+                        "length": 4
+                    },
+                    {
+                        "step": 4,
+                        "length": 4
+                    },
+                    {
+                        "step": 8,
+                        "length": 4,
+                        "name": "Morph Color",
+                        "type": "morphColor",
+                        "options": {
+                            "color1": "#FFFFFF",
+                            "color2": "#000000"
+                        }
+                    },
+                    {
+                        "step": 12,
+                        "length": 4
+                    }
+                ],
+                [
+                    {
+                        "step": 0,
+                        "length": 4
+                    },
+                    {
+                        "step": 4,
+                        "length": 4,
+                        "name": "Morph Color",
+                        "type": "morphColor",
+                        "options": {
+                            "color1": "#FFFFFF",
+                            "color2": "#000000"
+                        }
+                    },
+                    {
+                        "step": 8,
+                        "length": 4
+                    },
+                    {
+                        "step": 12,
+                        "length": 4
+                    }
+                ]
+            ]
+        }
+    ]
+}

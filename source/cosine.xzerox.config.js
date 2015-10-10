@@ -11,6 +11,14 @@ cosine.xzerox.config = {
         border: 2,
             size: 30
     },
+    actions: {
+        active: {
+            stroke: 'white'
+        },
+        inactive: {
+            stroke: 'gray'
+        }
+    },
     pattern: {
         steps: 16
     },
@@ -22,18 +30,18 @@ cosine.xzerox.config = {
     buttons: {
         on: {
             colors: {
-                0: 'white',
-                    4: 'yellow',
-                    8: 'orange',
-                    12: 'red'
+                0: '#ffffff',
+                    4: '#ffff00',
+                    8: '#ff6600',
+                    12: '#ff0000'
             }
         },
         off: {
             colors: {
-                0: '#999999',
-                    4: '#999900',
-                    8: '#993300',
-                    12: '#990000'
+                0: '#666666',
+                    4: '#666600',
+                    8: '#663300',
+                    12: '#660000'
             }
         }
     },

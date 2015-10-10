@@ -6,51 +6,20 @@ var cosine = cosine || {};
 
 cosine.xzerox = (function (utils, mvc, svg, config) {
     var buttonSize = config.grid.size + (config.grid.border * 2);
-
+    var x0xSize = buttonSize * 17;
     // TODO: maybe move to utils
     function position (pos) {
         this.x = pos.x;
         this.y = pos.y;
+        this.startPosition = {
+            x: pos.x,
+            y: pos.y
+        };
     }
 
     // x0x namespace to hold all the various views and utilities
     var x0x = {
         config: config,
-        patternBank: {
-            get: function (name) {
-                return this.store.get(name);
-            },
-            set: function (name, value) {
-                this.store.set(name, value);
-            },
-            store: utils.cache.storage('patternBank')
-        },
-        buildPattern: function (options) {
-            options = options ||
-                {
-                    sequence: {
-                        steps: [4, 8, 12, 16],
-                    }
-                };
-
-            return {
-                bars: [{
-                    sequences: [
-                        x0x.buildSequence(options.sequence),
-                        x0x.buildSequence(options.sequence),
-                        x0x.buildSequence(options.sequence)
-                    ]
-                }]
-            };
-        },
-        buildSequence: function (options) {
-            return [
-                {step: 2},
-                {step: 4},
-                {step: 8},
-                {step: 12}
-            ];
-        },
         buildSequenceView: function (barView, sequence) {
             var offsetX;
             var result = mvc.view({
@@ -98,13 +67,13 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                                 action: null,
                                 length: a.step, // -1 ?
                                 height: config.grid.size,
-                                width: x0x.getActionWidth(a.step, config.grid.size, config.grid.border),
+                                width: x0x.getStepActionWidth(a.step, config.grid.size, config.grid.border),
                                 fill: '#666666',
                                 stroke: 'grey'
                             };
 
                             result.views.push(aV);
-                            self.trigger('actionViewCreated', a, aV);
+                            self.trigger('stepActionViewCreated', a, aV);
                         }
 
                         // push the actual action view
@@ -112,7 +81,7 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                             action: a,
                             length: a.length,
                             height: config.grid.size,
-                            width: x0x.getActionWidth(a.length, config.grid.size, config.grid.border),
+                            width: x0x.getStepActionWidth(a.length, config.grid.size, config.grid.border),
                             fill: 'url(#pinkMorph)',
                             stroke: 'grey'
                         };
@@ -145,8 +114,16 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                         v.svgShape = svg.create.shape(v);
                         result.svg.appendChild(v.svgShape);
 
+                        var action = v.action;
+                        if (action) {
+                            var listView = x0x.views.actionList;
+                            if (action.type) {
+                                var a = listView.actionDefs[action.type];
+                                if (a) a.render(listView.defs, v.svgShape, action.options);
+                            }
+                        }
                         // assign click handlers to the shape
-                        self.trigger('actionViewCreated', v.action, v.svgShape);
+                        self.trigger('stepActionViewCreated', v.action, v.svgShape, self);
                         // TODO: assign destroy handlers to the action
                         // (when we destroy the action, should remove the shape from the svg)
 
@@ -173,7 +150,7 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
 //
 //                                        // if it's the first step, insert a spacer if we're not at 0
 //                                        if (i == 0 && a.step != 0) {
-//                                            stepWidth = getActionWidth(a.step, config.grid.size, config.grid.border);
+//                                            stepWidth = getStepActionWidth(a.step, config.grid.size, config.grid.border);
 //                                            //offsetX += config.grid.border;
 //                                            s = svg.create.shape({
 //                                                height: config.grid.size,
@@ -191,7 +168,7 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
 //                                        }
 //
 //                                        offsetX += config.grid.border;
-//                                        stepWidth = getActionWidth(a.length, config.grid.size, config.grid.border);
+//                                        stepWidth = getStepActionWidth(a.length, config.grid.size, config.grid.border);
 //                                        // create the SVG block for the action
 //                                        s = svg.create.shape({
 //                                            height: config.grid.size,
@@ -221,7 +198,7 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
         // 30 is 16x2 - 2, to fix for the outer borders of this item
         // OR 16= step length, 30 = (steplength * 2) - 2
         //width: (config.grid.size * a.step) + (config.grid.border * ((a.step * 2)-2)),
-        getActionWidth: function (size, grid, border) {
+        getStepActionWidth: function (size, grid, border) {
             return (grid * size) + (border * ((size * 2) - 2));
         },
         views: {
@@ -283,6 +260,7 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
 
                         this.buttons.push(s);
 
+                        // Handled in Controllers
                         this.trigger('buttonCreated', s, i);
 
                         this.svg.appendChild(s);
@@ -322,6 +300,14 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
 //                        bar: pattern.bars[0],
                 sequenceViews: [],
                 views: [],
+                clear: function () {
+                    utils.each(this.sequenceViews, function (v) {
+                        v.clear();
+                    });
+                    this.initialized = false;
+                    this.sequenceViews = [];
+                    this.position(this.startPosition);
+                },
                 // create sequence views
                 init: function () {
                     // each sequence in bar
@@ -365,8 +351,145 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                     //this.trigger('sequenceViewRendered', view);
                 },
                 render: function () {
+                    if (!this.initialized) this.init();
                     // render sequences top to bottom
                     utils.each(this.sequenceViews, this.renderView.bind(this));
+                }
+            }),
+            barSelect: mvc.view({
+                pattern: {},
+                position: position,
+                activeBarIndex: 0,
+                selectors: [],
+                selectorSize:  (config.grid.size) + (config.grid.border * 2),
+                shapes: [],
+                clear: function () {
+                },
+                init: function () {
+                    var self = this;
+
+                    utils.each(this.pattern.bars, function (bar, index) {
+                        self.shapes.push({
+                            width: self.selectorSize,
+                            height: self.selectorSize
+                        });
+                    });
+                },
+                render: function () {
+                    var self = this;
+                    // TODO: get full width of the selector
+                    var count = this.pattern.bars.length;
+                    var viewWidth = (this.selectorSize * count) + (config.grid.border * count * 2);
+                    var currentX = (x0xSize - viewWidth) + config.grid.border;
+                        currentY = this.y + config.grid.border;
+
+                    utils.each(this.shapes, function (shapeDef, index) {
+                        var set = 'off';
+                        if (index == self.activeBarIndex) {
+                            set = 'on';
+                        }
+                        shapeDef.fill = config.buttons[set].colors[((index + 1) * 4) - 4];
+                        shapeDef.x = currentX;
+                        shapeDef.y = currentY;
+                        var button = svg.create.shape(shapeDef);
+                        self.svg.appendChild(button);
+                        self.trigger('barSelectorCreated', button, self.pattern.bars[index], index);
+
+                        currentX += self.selectorSize + (config.grid.border * 2);
+                    });
+                    this.y = currentY + this.selectorSize + config.grid.border;
+                }
+            }),
+            // view of available actions
+            actionList: mvc.view({
+                actions: [],
+                actionDefs: {},
+                views: [],
+                clear: function () {
+                    // iterate through the views, and remove each svg, then delete the view
+                    var self = this;
+                    // iterate over the views of each action and remove them
+                    utils.each(this.views, function (v) {
+                        self.svg.removeChild(v.svgShape);
+                    });
+
+                    this.views = [];
+                },
+                init: function () {
+                    var self = this;
+                    // each action in the list
+                    // TODO: maybe we don't need this much?
+                    //utils.each(this.actions, this.addActionView.bind(this));
+                    utils.each(this.actions, function (a) {
+
+                        // TODO: Check to see if the gradient def exists and delete it
+                        // TODO: uh, so... if we have the same gradient id, we will have a problem
+                        //      ... maybe we need to de-dupe the gradient list? This could be an acceptable bug...
+                        // TODO: NO ! PREVENT THIS BUG FROM EVER HAPPENING - don't allow the same gradient to be created
+                        // TODO: we don't have a good gradient renderer separate from the actionDef, but that may be ok
+
+                        // add a shape definition to views
+                        var aV = {
+                            action: a,
+                            length: 2,
+                            height: config.grid.size,
+                            width: x0x.getStepActionWidth(2, config.grid.size, config.grid.border),
+                            // TODO: Ooohhh, ok, we're going to need to render gradients into the defs from here
+                            fill: 'red', // 'url(#pinkMorph)',
+                            stroke: 'grey'
+                        };
+                        self.views.push(aV);
+                    });
+                    // add button
+                },
+                renderView: function (view) {
+                    // view is a shape definition. We need to create the shape and add it to view.svgShape
+                    view.svgShape = svg.create.shape(view);
+                    this.svg.appendChild(view.svgShape);
+
+                    // TODO: Set position of the view
+
+                    // TODO: assign click handlers to the shape
+                    this.trigger('actionViewCreated', view.action, view.svgShape);
+
+                    // Render the actionDef into the shape
+                    var def = this.actionDefs[view.action.type];
+                    def.render(this.defs, view.svgShape, view.action.options);
+                },
+                render: function () {
+                    var self=this,
+                        // find the bottom of the svg element
+                        rect = this.svg.getBoundingClientRect();
+
+                    // Start the rendering at 2x grid location
+                    var currentY = rect.height - (((config.grid.border * 2)+config.grid.size)*2), // 2 rows
+                        currentX = config.grid.border;
+
+                    utils.each(this.views, function (v) {
+                        v.y = currentY;
+                        v.x = currentX;
+                        self.renderView(v);
+                        currentX += v.width + (config.grid.border * 2);
+                    });
+
+                    if (this.addAction) {
+                        this.addAction.x.baseVal.value = currentX;
+                        this.addAction.y.baseVal.value = currentY;
+                    }
+                    else {
+                        // render the "add action" svg button
+                        this.addAction = svg.create.shape({
+                            width: config.grid.size,
+                            height: config.grid.size,
+                            y: currentY,
+                            x: currentX,
+                            fill: "#FF00FF",
+                            stroke: "grey"
+                        });
+                        this.svg.appendChild(this.addAction);
+                        // handled by actionController
+                        this.trigger('addActionCreated', this.addAction);
+                    }
                 }
             })
         }

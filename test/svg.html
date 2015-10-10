@@ -3,16 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title></title>
+    <style>
+        body {
+            background: #000000;
+            color: #999999;
+            font: 12px arial;
+        }
+        #container {
+            border: 1px solid orange;
+        }
+        #actionEditor {
+            width: 153px;
+            border: 1px solid orange;
+        }
+    </style>
 </head>
 <body>
     <script src="../lib/cosinedesign.utility.js"></script>
     <script src="../lib/cosinedesign.svg.js"></script>
+    <script src="../lib/cosinedesign.graphics.js"></script>
+    <script src="../lib/cosinedesign.editor.js"></script>
     <script src="../lib/cosinedesign.mvc.js"></script>
     <script src="../source/cosine.xzerox.config.js"></script>
     <script src="../source/cosine.xzerox.js"></script>
+    <script src="../source/cosine.xzerox.services.js"></script>
+    <script src="../source/cosine.treeoflife.actions.js"></script>
     <script src="../source/cosine.xzerox.controllers.js"></script>
 
     <div id="container"></div>
+    <div id="debug"></div>
     <script>
 
         // TODO: Identify the active sequence on init
@@ -28,7 +47,7 @@
         // instantiate: set reference to SVG target
         // init: build shapes, store shapes, get total height/width
         // render
-        (function (views, pattern, svg) {
+        (function (views, pattern, action, svg) {
             var container = document.getElementById('container'),
                 host = svg.create.svg({
                         width: 800,
@@ -49,18 +68,23 @@
             // Wire up container references
             container.appendChild(host);
             views.buttonBar.el = container;
+
             // Assign the SVG host element
+            views.barSelect.svg = host;
             views.buttonBar.svg = host;
             views.bar.svg = host;
-
+            views.actionList.svg = host;
+            views.actionList.defs = host.firstChild;
 
             pattern.init();
+            action.init();
+            action.editor.render();
         })(
             cosine.xzerox.views,
             cosine.xzerox.controllers.pattern,
+            cosine.xzerox.controllers.action,
             cosinedesign.svg
         );
-
     </script>
 
 </body>

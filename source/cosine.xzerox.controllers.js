@@ -6,6 +6,7 @@
 (function (x0x, utils, svg, editor, services, actionDefs, config) {
     var actionController,
         patternController,
+        patternListController,
         views = x0x.views;
 
     x0x.controllers = {};
@@ -14,6 +15,21 @@
     var i,
         buttonSize = config.grid.size + (config.grid.border * 2),
         offset = config.grid.border;
+
+    patternListController = {
+        actions: {
+            list: function () {},
+            save: function () {},
+            upload: function () {
+                alert('upload');
+                // TODO: call server's upload method
+                utils.api.post(
+                    config.server.url + ':' + config.server.apiPort + config.server.api.pattern,
+                    // TODO: Compress the active pattern before sending
+                    patternController.activePattern.bars);
+            }
+        }
+    };
 
     views.barSelect.on('barSelectorCreated', function (s, selectedBar, barIndex) {
         utils.ui.addClick(s, function () {
@@ -68,6 +84,7 @@
             }
 
             // re-render the active sequence view
+            sequenceView.position(sequenceView.startPosition);
             sequenceView.clear();
             sequenceView.init();
             sequenceView.render();
@@ -129,9 +146,13 @@
         view.on('stepActionViewCreated', function (action, shape, sequenceView) {
             // assign click handler
             utils.ui.addClick(shape, function () {
-                var active = patternController.activeAction;
+                var active = utils.clone(patternController.activeAction);
+
+                if (active.name) delete active.name;
+
                 // merge the action information from activeAction
-                utils.merge(action, active);
+                // fixme: this probably leaves around garbage attributes
+                utils.merge(action, active, true);
 
                 // TODO: render action into shape
                 actionDefs[active.type]
@@ -160,6 +181,12 @@
         patternController.activeSequence = view.sequence;
         patternController.activeSequenceIndex = view.sequenceIndex;
         view.select.button.style.fill = config.sequence.selected.fill;
+
+        // Remove Sequence
+        if (!b.removeSequenceButton) {
+            b.removeSequenceButton = svg.create.use(b.selectedSequenceView.svg, { id: 'removeItem'}, { x: b.selectedSequenceView.x + config.grid.border, y: b.selectedSequenceView.y + config.grid.border });
+        }
+        b.removeSequenceButton.y.baseVal.value = view.y + config.grid.border;
     }
 
     function getViewForSequence(index) {
@@ -198,18 +225,29 @@
 
             this.activeSequence = this.activePattern.bars[0].sequences[0];
             this.activeSequenceIndex = 0;
-            var startPosition = { x:0, y:0 };
+            var startPosition = { x:0, y:0},
+                barSelect = views.barSelect,
+                bar = views.bar,
+                menu = views.menuBar;
 
-            var barSelect = views.barSelect;
             barSelect.pattern = this.activePattern;
             barSelect.position(startPosition);
+            barSelect.listPatternClick = patternListController.actions.list;
             barSelect.init();
             barSelect.render();
+
+            // over one, down one
+            menu.position({
+                x: barSelect.x + config.grid.size + (config.grid.border*2),
+                y: barSelect.y
+            });
+            menu.savePatternClick = patternListController.actions.save;
+            menu.uploadPatternClick = patternListController.actions.upload;
+            menu.render();
 
             startPosition.y = barSelect.y;
             startPosition.x = 0;
 
-            var bar = views.bar;
             bar.bar = this.activePattern.bars[0];
             bar.position(startPosition);
             bar.render();
@@ -258,6 +296,8 @@
     };
     // end pattern controller   -------------------------------------------
 
+
+
     // Action Controller        -------------------------------------------
     // Responsible for the list of available actions
     actionController = x0x.controllers.action = {
@@ -304,12 +344,17 @@
             listView.actions = this.actionPresets;
             listView.on('addActionCreated', function (svgButton) {
                 utils.ui.addClick(svgButton, function () {
-                    // TODO: create a new default action
-                    // TODO: launch editor with that action
-                    actionController.editor.show();
+                    // create a new default action
+                    var def = utils.find(actionDefs, function () {
+                        return true;
+                    });
+                    actionController.actions.addNewAction({
+                        type: def.type,
+                        options: {}
+                    });
                 });
             });
-            var activeShape;
+            var activeActionShape;
             listView.on('actionViewCreated', function (action, shape) {
                 // TODO: add double-click to edit functionality
                 utils.ui.bind(shape, 'doubleclick', function () {
@@ -318,13 +363,16 @@
 
                 // Click on action in menu
                 utils.ui.addClick(shape, function () {
-                    // TODO: set this to be the active action
-                    patternController.activeAction = action;
+                    if (patternController.activeAction === action) {
+                        actionController.actions.editAction(action);
+                    } else {
+                        patternController.activeAction = action;
 
-                    if (activeShape)
-                        activeShape.style.stroke = config.actions.inactive.stroke;
-                    shape.style.stroke = config.actions.active.stroke;
-                    activeShape = shape;
+                        if (activeActionShape)
+                            activeActionShape.style.stroke = config.actions.inactive.stroke;
+                        shape.style.stroke = config.actions.active.stroke;
+                        activeActionShape = shape;
+                    }
                 });
             });
 
@@ -334,19 +382,38 @@
         actions: {
             editAction: function (action) {
                 // launch the editor
+                var ed = actionController.editor;
+                ed.actionData = action;
+                ed.editingAction = action;
+                ed.render();
             },
-            addNewAction: function () {
+            addNewAction: function (newAction) {
                 // TODO: add a new action to this.actions
                 // TODO: re-render the list
                 // TODO: pop the action editor, with the new action
-                actionController.editor.show();
+                var ed = actionController.editor;
+                ed.clear();
+                // do not need to clone here, newAction is already new...
+                ed.actionData = newAction;
+                ed.setType(newAction.type)
+                    // launch editor with that action
+                    .render();
             },
             saveAction: function (newAction) {
-                var clone = JSON.stringify(newAction);
-                actionController.actionPresets.push(JSON.parse(clone));
-                views.actionList.clear();
-                views.actionList.init();
-                views.actionList.render();
+                var ed = actionController.editor;
+                // if ed.editingAction exists, we need to modify that.
+
+                if (ed.editingAction) {
+                    // copy new action over ed.editingAction
+                    utils.merge(ed.editingAction, newAction, true);
+                } else {
+                    // otherwise, we're adding.
+                    actionController.actionPresets.push(utils.clone(newAction));
+                }
+                views.actionList
+                    .clear()
+                    .init()
+                    .render();
             }
         }
 
@@ -360,49 +427,69 @@
     // Action Editor            -------------------------------------------
     // TODO: Refactor all this into an 'actionEditor'; this could even be a lazy property on the controller
     actionController.editor = (function () {
-        var el = actionController[editorId],
-            initialAction ={
-                type: "morphColor",
-                options: {
-                    color1: "#FF0000",
-                    color2: "#00FF00",
-                    sides: 6
-                }
-            };
-        document.body.appendChild(el);
+        var el = document.body.appendChild(actionController[editorId]),
+            initialAction = utils.find(actionDefs, function () {
+                return true;
+            });
 
         var scope = {
             // This is a temp action like you would find in a sequence
             actionData: initialAction,
             actionDef: actionDefs[initialAction.type],
             actionOptions: {},
-            svgDefs: document.createElementNS(svg.ns, 'defs'),
             svgAction: svg.create.svg({
                 width: 200, height: 30
             }),
-            svgShape: svg.create.shape({width: 150, height: 30}),
-            render: function () {
-                // set actionData.type to be the selected action type
-                this.actionData.type = this.actionSelect.options[this.actionSelect.selectedIndex].value;
-                this.actionDef = actionDefs[this.actionData.type];
+            svgShape: svg.create.shape({width: config.grid.size * 5, height: config.grid.size}),
+            cancel: function () {
+                this.editingAction = null;
+                this.hide();
+                return this;
+            },
+            setType: function (type) {
+                this.actionDef = actionDefs[type];
+                if (!this.actionData) this.actionData = {};
+                this.actionData.type = type;
+                //this.actionData.name = this.actionDef.name;
                 // then get the new schema for the new action type and create some options for it
-                var schema = this.actionDef.schema;
-                // TODO: consider if any of this object is an observable before we delete it...?
                 var opt = this.actionData.options;
                 this.actionData.options = {};
-                // import schema into options, using old values if we have them
-                utils.each(schema, function (item, index, key) {
+                // import schema into options, using old values if we have them, default if not.
+                utils.each(this.actionDef.schema, function (item, index, key) {
                     scope.actionData.options[key] = opt[key] || item.default;
                 });
-                // then re-render the gradient view
-                this.actionDef.render(this.svgDefs, this.svgShape, this.actionData.options);
+                return this;
+            },
+            clear: function () {
+                if (this.editor) this.editor.clear();
+                this.actionData = null;
+                this.editingAction = null;
+                return this;
+            },
+            renderPreview: function () {
+                // re-render the gradient view
+                this.actionDef.render(views.actionList.defs, this.svgShape, this.actionData.options);
+            },
+            render: function () {
+                var type = this.actionData.type;
+                utils.ui.setSelectedValue(this.actionSelect, type);
+                this.actionDef = actionDefs[type];
+                this.renderPreview();
                 // then re-run the editor stuff
-                this.editor = editor.edit(schema, this.actionData.options, editContainer);
+                this.editor = editor.edit(this.actionDef.schema, this.actionData.options, editContainer);
+                this.show();
 
                 utils.ui.align.center(views.actionList.svg, el);
+                return this;
+            },
+            show: function () {
+                el.style.display = 'block';
+                return this;
             },
             hide: function () {
+                if (this.editor) this.editor.hide();
                 el.style.display = 'none';
+                return this;
             }
         };
 
@@ -413,20 +500,21 @@
 
         // add svg to editor for rendering action
         el.appendChild(scope.svgAction);
-        scope.svgAction.appendChild(scope.svgDefs);
+        //scope.svgAction.appendChild(scope.svgDefs);
         scope.svgAction.appendChild(scope.svgShape);
         el.appendChild(scope.actionSelect);
-        var editContainer = document.createElement('div');
-        el.appendChild(editContainer);
+        var editContainer = el.appendChild(document.createElement('div'));
 
         utils.ui.bind(scope.actionSelect, 'change', function (e) {
             // on change of actionselect, we need to re-run alllll of this over again.
             // first run editor.clear;
             scope.editor.clear();
+            // set actionData.type to be the selected action type
+            scope.setType(scope.actionSelect.options[scope.actionSelect.selectedIndex].value);
             scope.render();
         });
 
-        //scope.render();
+        scope.hide();
 
         // add save button
         el.appendChild(utils.ui.create.input({
@@ -434,10 +522,22 @@
             value: 'Save',
             events: {
                 click: function () {
+                    // TODO: If this is an existing action we should then overwrite it
+                    // TODO: To preserve the existing action we should only operate on a fake action until save
                     // add a new action to actions
                     actionController.actions.saveAction(scope.actionData);
                     // TODO: then close the editor
                     scope.hide();
+                }
+            }
+        }));
+        el.appendChild(utils.ui.create.input({
+            type: 'button',
+            value: 'Cancel',
+            events: {
+                click: function () {
+                    // Close the editor
+                    scope.cancel();
                 }
             }
         }));

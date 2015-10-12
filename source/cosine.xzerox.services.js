@@ -56,10 +56,11 @@ cosine.xzerox.services = (function (utils) {
     pattern.buildBar = function (options) {
         return {
             sequences: [
-                this.buildSequence(options.sequence),
-                this.buildSequence(options.sequence),
-                this.buildSequence(options.sequence),
-                this.buildSequence(options.sequence)
+                // TODO: uh, wtf is options.sequence doing here anymore?
+                this.buildSequence(options.sequence)//,
+                //this.buildSequence(options.sequence),
+                //this.buildSequence(options.sequence),
+                //this.buildSequence(options.sequence)
             ]
         };
     };
@@ -76,8 +77,8 @@ cosine.xzerox.services = (function (utils) {
         return {
             name: options.name,
             bars: [
-                this.buildBar(options),
-                this.buildBar(options)
+                this.buildBar(options) //,
+                //this.buildBar(options)
             ]
         };
     };

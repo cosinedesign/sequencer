@@ -5,7 +5,7 @@
 // an action has:
 // config
 // render()
-
+var currentStepDuration = 500;
 var cosine = cosine || {};
 cosine.treeOfLife = cosine.treeOfLife || {};
 
@@ -36,8 +36,30 @@ cosine.treeOfLife.renderers = (function (svg) {
     cosinedesign.svg
 );
 
+// Client-side rendering tools
+cosine.treeOfLife.toolkit = (function (svg) {
+    var svgView
+    function getSvg() {
+        if (svgView) return svgView;
+        svgView = document.body.appendChild(svg.create.svg({ width: '100%', height: '100%' }));
+        return svgView;
+    }
+
+    function tween(fromTarget, toSource, interval, callback) {
+        createjs.Tween.get(fromTarget).to(toSource, interval).addEventListener('change', callback);
+    }
+
+    return {
+        svgView: getSvg,
+        tween: tween
+    };
+})(
+    cosinedesign.svg
+);
+
+
 // These are the action definitions... not the action data
-cosine.treeOfLife.actions = (function (renderers) {
+cosine.treeOfLife.actions = (function (renderers, color) {
     // TODO: We will need to delineate between an action definition and the action itself
     // TODO: or maybe we have a create method that creates the action config object? or updates it?
     // TODO: define action schema
@@ -49,7 +71,8 @@ cosine.treeOfLife.actions = (function (renderers) {
             type: options.type || 'setColor',
             options: options.options || {},
             render: options.render || renderers.fill,
-            schema: options.schema || {}
+            schema: options.schema || {},
+            action: options.action || function () {}
         }
     }
 
@@ -60,10 +83,15 @@ cosine.treeOfLife.actions = (function (renderers) {
             name: 'Set Color',
             type: 'setColor',
             schema: {
-                color1: {
+                color: {
                     type: "color",
                     options: {label: "Color"},
                     default: '#ff00ff'
+                }
+            },
+            action: function (options) {
+                if (options.color) {
+                    document.body.style.background = options.color;
                 }
             }
         }),
@@ -83,14 +111,39 @@ cosine.treeOfLife.actions = (function (renderers) {
                     options: {label: "Color 2"},
                     default: "#FF00FF"
                 }
+            },
+            action: function (options) {
+                document.body.style.background = options.color1;
+                var c1 = color.HEXtoRGB(options.color1),
+                    c2 = color.HEXtoRGB(options.color2);
+                cosine.treeOfLife.toolkit.tween(c1, c2, currentStepDuration, function () {
+                    document.body.style.background = color.RGBtoHEX(c1);
+                });
             }
         }),
         strobe: actionDef({
             name: 'strobe',
             type: 'strobe',
-            render: function (defs, shape) {
-                shape.style.fill = "#FFFFFF";
-            }})
+            schema: {
+                color: {
+                    type: "color",
+                    options: { label: "Color" },
+                    default: '#ffffff'
+                }
+            },
+            action: function (options) {
+                options = options || {};
+                options.duration = options.duration || 50;
+                options.baseColor = options.baseColor || '#000000';
+                if (options.color) {
+                    document.body.style.background = options.color;
+                }
+
+                setTimeout(function () {
+                    document.body.style.background = options.baseColor;
+                }, options.duration);
+            }
+        })
     };
 
     // strobe/Flash
@@ -98,6 +151,7 @@ cosine.treeOfLife.actions = (function (renderers) {
     // tesselate
     // fire / water / smoke
 })(
-    cosine.treeOfLife.renderers
+    cosine.treeOfLife.renderers,
+    cosinedesign.graphics.color
 );
 

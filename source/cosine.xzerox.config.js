@@ -7,6 +7,14 @@ cosine.xzerox = cosine.xzerox || {};
 
 // TODO: Make some of these values responsive
 cosine.xzerox.config = {
+    server: {
+        url: "http://localhost",
+        port: 8000,
+        apiPort: 7000,
+        api: {
+            pattern: "/pattern"
+        }
+    },
     grid: {
         border: 2,
             size: 30
@@ -47,9 +55,11 @@ cosine.xzerox.config = {
     },
     sequence: {
         button: {
-            fill: '#00FF00'
+            stroke: '#666666',
+            fill: 'black'
         },
         selected: {
+            stroke: '#ffffff',
             fill: 'orange'
         }
     }

@@ -32,6 +32,63 @@
 
     <div id="container"></div>
     <div id="debug"></div>
+    <svg id="TreeOfLifeAssets" xmlns="http://www.w3.org/2000/svg" width="0" height="0">
+        <defs id="assetsDef">
+            <g id="addItem">
+                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="15" y1="23" x2="15" y2="8"/>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8" y1="15" x2="23" y2="15"/>
+            </g>
+            <g id="removeItem">
+                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8" y1="15" x2="23" y2="15"/>
+            </g>
+            <g id="nextItem">
+                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
+                <polygon fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="22.496,23.5 9.505,16 22.496,8.5 "/>
+            </g>
+            <g id="prevItem">
+                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
+                <polygon fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="9.505,8.5
+	22.496,16 9.505,23.5 "/>
+            </g>
+            <g id="listItems">
+                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="7" y1="10" x2="23" y2="10"/>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="7" y1="15" x2="23" y2="15"/>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="7" y1="20" x2="23" y2="20"/>
+            </g>
+            <g id="savePattern">
+                <g>
+                    <polygon stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="4.3,1 1,4.301
+			1,27.699 4.3,30 27.699,30 30,27.699 30,4.301 27.699,1 		"/>
+                    <g>
+
+                        <rect x="8" y="17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="14"/>
+
+                        <rect x="18" y="17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="5" height="12"/>
+                    </g>
+                </g>
+                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M28.337,11.801
+		c0,0.827-0.671,1.5-1.5,1.5H5.163c-0.829,0-1.5-0.673-1.5-1.5V5.5c0-0.829,0.671-1.5,1.5-1.5h21.674c0.829,0,1.5,0.671,1.5,1.5
+		V11.801z"/>
+            </g>
+            <g id="uploadPattern">
+                <rect x="0" y="0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
+                <polygon stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="8,22.494 16,9.5 23,22.494 "/>
+            </g>
+        </defs>
+    </svg>
+    <svg id="TreeOfLifeAssets_Demo" xmlns="http://www.w3.org/2000/svg">
+        <use xlink:href="#addItem"/>
+        <use xlink:href="#removeItem" x="32" y="0"/>
+        <use xlink:href="#nextItem" x="64" y="0"/>
+        <use xlink:href="#prevItem" x="96" y="0"/>
+        <use xlink:href="#listItems" x="128" y="0"/>
+        <use xlink:href="#savePattern" x="160" y="0" transform="translate(-160,0) scale(2)" style="stroke: orange; fill: none;"/>
+        <use xlink:href="#uploadPattern" x="224" y="0" transform="translate(-224,0) scale(2)" style="stroke: #ffffff; fill: none;"/>
+    </svg>
+
     <script>
 
         // TODO: Identify the active sequence on init
@@ -47,7 +104,7 @@
         // instantiate: set reference to SVG target
         // init: build shapes, store shapes, get total height/width
         // render
-        (function (views, pattern, action, svg) {
+        (function (views, patternCtl, actionCtl, svg) {
             var container = document.getElementById('container'),
                 host = svg.create.svg({
                         width: 800,
@@ -67,18 +124,20 @@
 
             // Wire up container references
             container.appendChild(host);
+            // import assets to host
             views.buttonBar.el = container;
 
             // Assign the SVG host element
             views.barSelect.svg = host;
+            views.menuBar.svg = host;
             views.buttonBar.svg = host;
             views.bar.svg = host;
             views.actionList.svg = host;
             views.actionList.defs = host.firstChild;
 
-            pattern.init();
-            action.init();
-            action.editor.render();
+            patternCtl.init();
+            actionCtl.init();
+            //action.editor.render();
         })(
             cosine.xzerox.views,
             cosine.xzerox.controllers.pattern,

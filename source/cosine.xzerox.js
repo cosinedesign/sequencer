@@ -130,7 +130,7 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                         // add right side border to offset
                         offsetX += v.width + config.grid.border; // self.x
                     });
-
+                    this.x = offsetX;
                     this.trigger('render', this);
 //                                    // TODO: implement below:
 //                                    utils.each(sequence, function (a, i) {
@@ -202,6 +202,35 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
             return (grid * size) + (border * ((size * 2) - 2));
         },
         views: {
+            menuBar: mvc.view({
+                position: position,
+                uploadPatternClick: null,
+                savePatternClick: null,
+                render: function () {
+                    var spacing =(config.grid.size + (config.grid.border *2))*2;
+                    // render the list button
+                    //this.x += spacing;
+                    // render the upload button
+                    var pos = { x: this.x + config.grid.border, y: this.y + config.grid.border };
+                    this.uploadPattern = svg.create.use(this.svg, { id: 'uploadPattern'}, pos,
+                        'translate(-' + pos.x + ' ,-' + pos.y + ') scale(2)',
+                        {  stroke: 'orange', fill: 'none' }
+                    );
+                    if (this.uploadPatternClick) utils.ui.addClick(this.uploadPattern, this.uploadPatternClick);
+
+                    this.y += spacing;
+                    // render the save button
+                    pos = { x: this.x + config.grid.border, y: this.y + config.grid.border };
+                    this.savePattern = svg.create.use(this.svg, { id: 'savePattern'}, pos,
+                        'translate(-' + pos.x + ' ,-' + pos.y + ') scale(2)',
+                        {  stroke: 'orange', fill: 'none' }
+                    );
+                    if (this.savePatternClick) utils.ui.addClick(this.savePattern, this.savePatternClick);
+
+                    // update it juuust in case
+                    this.y += spacing;
+                }
+            }),
             buttonBar: mvc.view({
                 buttons: [],
                 position: position,
@@ -215,15 +244,16 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                         initialX;
 
                     this.initialized = true;
-                    this.addSequence = svg.create.shape({
-                        height: config.grid.size,
-                        width: config.grid.size,
-                        x: this.x + config.grid.border,
-                        y: this.y + config.grid.border,
-                        fill: config.xox.new.fill,
-                        stroke: 'grey'
-                    });
-                    this.svg.appendChild(this.addSequence);
+                    //this.addSequence = svg.create.shape({
+                    //    height: config.grid.size,
+                    //    width: config.grid.size,
+                    //    x: this.x + config.grid.border,
+                    //    y: this.y + config.grid.border,
+                    //    fill: config.xox.new.fill,
+                    //    stroke: 'grey'
+                    //});
+                    this.addSequence = svg.create.use(this.svg, { id: 'addItem'}, { x: this.x + config.grid.border, y: this.y + config.grid.border });
+                    //this.svg.appendChild(this.addSequence);
 
                     // add click for addSequence
                     utils.ui.addClick(this.addSequence, this.addSequenceClick);
@@ -273,8 +303,8 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                     this.update();
                 },
                 move: function (position) {
-                    //TODO: Move each button to start at the provided position
-                    this.addSequence.style.y = position.y;
+                    // Move each button to start at the provided position
+                    this.addSequence.y.baseVal.value = position.y;
 
                     utils.each(this.buttons, function (s) {
                         s.style.y = position.y;
@@ -361,7 +391,7 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                 position: position,
                 activeBarIndex: 0,
                 selectors: [],
-                selectorSize:  (config.grid.size) + (config.grid.border * 2),
+                selectorSize:  (config.grid.size),
                 shapes: [],
                 clear: function () {
                 },
@@ -377,10 +407,12 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                 },
                 render: function () {
                     var self = this;
+                    this.listPattern = svg.create.use(this.svg, { id: 'listItems'}, { x: this.x + config.grid.border, y: this.y + config.grid.border });
+
                     // TODO: get full width of the selector
                     var count = this.pattern.bars.length;
                     var viewWidth = (this.selectorSize * count) + (config.grid.border * count * 2);
-                    var currentX = (x0xSize - viewWidth) + config.grid.border;
+                    var currentX = (x0xSize - viewWidth) + config.grid.border,
                         currentY = this.y + config.grid.border;
 
                     utils.each(this.shapes, function (shapeDef, index) {
@@ -397,6 +429,13 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
 
                         currentX += self.selectorSize + (config.grid.border * 2);
                     });
+
+                    //var g = svg.create.element(self.svg, 'g', { x: currentX, y: currentY });
+                    var addBar = svg.create.use(self.svg, { id: 'addItem'}, { x: currentX, y: currentY });
+
+                    // TODO: Add click for addBar
+
+                    this.x = currentX + this.selectorSize + config.grid.border;
                     this.y = currentY + this.selectorSize + config.grid.border;
                 }
             }),
@@ -414,6 +453,7 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                     });
 
                     this.views = [];
+                    return this;
                 },
                 init: function () {
                     var self = this;
@@ -435,12 +475,13 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                             height: config.grid.size,
                             width: x0x.getStepActionWidth(2, config.grid.size, config.grid.border),
                             // TODO: Ooohhh, ok, we're going to need to render gradients into the defs from here
-                            fill: 'red', // 'url(#pinkMorph)',
+                            fill: 'black', // 'url(#pinkMorph)',
                             stroke: 'grey'
                         };
                         self.views.push(aV);
                     });
                     // add button
+                    return this;
                 },
                 renderView: function (view) {
                     // view is a shape definition. We need to create the shape and add it to view.svgShape
@@ -455,14 +496,15 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                     // Render the actionDef into the shape
                     var def = this.actionDefs[view.action.type];
                     def.render(this.defs, view.svgShape, view.action.options);
+                    return this;
                 },
                 render: function () {
                     var self=this,
                         // find the bottom of the svg element
                         rect = this.svg.getBoundingClientRect();
 
-                    // Start the rendering at 2x grid location
-                    var currentY = rect.height - (((config.grid.border * 2)+config.grid.size)*2), // 2 rows
+                    // Start the rendering at 1x grid location
+                    var currentY = rect.height - (((config.grid.border * 2)+config.grid.size)),// 1 row, we should subtract this to add more rows.
                         currentX = config.grid.border;
 
                     utils.each(this.views, function (v) {
@@ -478,18 +520,21 @@ cosine.xzerox = (function (utils, mvc, svg, config) {
                     }
                     else {
                         // render the "add action" svg button
-                        this.addAction = svg.create.shape({
-                            width: config.grid.size,
-                            height: config.grid.size,
-                            y: currentY,
-                            x: currentX,
-                            fill: "#FF00FF",
-                            stroke: "grey"
-                        });
+                        //this.addAction = svg.create.shape({
+                        //    width: config.grid.size,
+                        //    height: config.grid.size,
+                        //    y: currentY,
+                        //    x: currentX,
+                        //    fill: "#FF00FF",
+                        //    stroke: "grey"
+                        //});
+                        this.addAction = svg.create.use(self.svg, { id: 'addItem'}, { x: currentX, y: currentY });
+
                         this.svg.appendChild(this.addAction);
                         // handled by actionController
                         this.trigger('addActionCreated', this.addAction);
                     }
+                    return this;
                 }
             })
         }

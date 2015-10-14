@@ -15,6 +15,9 @@ cosine.treeOfLife.renderers = (function (svg) {
         fill: function (defs, shape, options) {
             shape.style.fill = options.color;
         },
+        text: function (defs, shape, options) {
+            svg.create.text(shape, options.text);
+        },
         gradient: function (defs, shape, options) {
 
             // create a gradient id...
@@ -38,11 +41,26 @@ cosine.treeOfLife.renderers = (function (svg) {
 
 // Client-side rendering tools
 cosine.treeOfLife.toolkit = (function (svg) {
-    var svgView
+    var svgView;
     function getSvg() {
         if (svgView) return svgView;
         svgView = document.body.appendChild(svg.create.svg({ width: '100%', height: '100%' }));
         return svgView;
+    }
+
+    function hideGroup (g) {
+        if (g) svg.setAttribues({ opacity: 0 })
+    }
+    var useElements = {},
+        activeGroup;
+    function showGroup(id, actionId) {
+        hideGroup(activeGroup);
+        var use = useElements[actionId];
+        if (!use) {
+            useElements[actionId] = svg.create.use(getSvg(), { id: id }, {}, {}, {});
+        }
+        activeGroup = use;
+        svg.setAttributes(use, { opacity: 1 });
     }
 
     function tween(fromTarget, toSource, interval, callback) {
@@ -51,6 +69,7 @@ cosine.treeOfLife.toolkit = (function (svg) {
 
     return {
         svgView: getSvg,
+        showGroup: showGroup,
         tween: tween
     };
 })(
@@ -59,7 +78,7 @@ cosine.treeOfLife.toolkit = (function (svg) {
 
 
 // These are the action definitions... not the action data
-cosine.treeOfLife.actions = (function (renderers, color) {
+cosine.treeOfLife.actions = (function (renderers, color, svg) {
     // TODO: We will need to delineate between an action definition and the action itself
     // TODO: or maybe we have a create method that creates the action config object? or updates it?
     // TODO: define action schema
@@ -143,6 +162,32 @@ cosine.treeOfLife.actions = (function (renderers, color) {
                     document.body.style.background = options.baseColor;
                 }, options.duration);
             }
+        }),
+        DANCE: actionDef({
+            name: 'DANCE',
+            type: 'DANCE',
+            schema: {},
+            render: function (defs, shape, options) {
+                shape.style.fill = '#000000';
+                svg.create.text(shape.parentNode, "DANCE", { x: shape.x.baseVal.value + 10 , y: shape.y.baseVal.value + 10, width: 40, height: 15, fill: '#ffffff' });
+            },
+            action: function () {
+                cosine.treeOfLife.toolkit.showGroup('DANCE', "DANCE-CAMP");
+                // TODO: set interval to hide this after nnn time
+            }
+        }),
+        CAMP: actionDef({
+            name: 'CAMP',
+            type: 'CAMP',
+            schema: {},
+            render: function (defs, shape, options) {
+                shape.style.fill = '#ffffff';
+                svg.create.text(shape.parentNode, "CAMP", { x: shape.x.baseVal.value + 10 , y: shape.y.baseVal.value + 10, width: 40, height: 15, fill: '#000000' });
+            },
+            action: function () {
+                cosine.treeOfLife.toolkit.showGroup('CAMP', "CAMP-DANCE");
+                // TODO: set interval to hide this after nnn time
+            }
         })
     };
 
@@ -152,6 +197,7 @@ cosine.treeOfLife.actions = (function (renderers, color) {
     // fire / water / smoke
 })(
     cosine.treeOfLife.renderers,
-    cosinedesign.graphics.color
+    cosinedesign.graphics.color,
+    cosinedesign.svg
 );
 

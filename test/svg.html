@@ -16,6 +16,29 @@
             width: 153px;
             border: 1px solid orange;
         }
+
+        /* Transport ********************************************************/
+        #TreeOfLifeTransport {
+            width: 600px;
+            height: 200px;
+        }
+        #tapTempo {
+            fill: #009900;
+        }
+        #cur {
+            fill: #333333;
+        }
+        #avg {
+            fill: #666666;
+        }
+        #cum {
+            fill: #999999;
+        }
+        .on {
+            fill: #FFFF00;
+        }
+        .bpmText { color: #000000; }
+        /* End Transport ****************************************************/
     </style>
 </head>
 <body>
@@ -24,10 +47,12 @@
     <script src="../lib/cosinedesign.graphics.js"></script>
     <script src="../lib/cosinedesign.editor.js"></script>
     <script src="../lib/cosinedesign.mvc.js"></script>
+    <script src="../source/cosine.treeoflife.actions.js"></script>
     <script src="../source/cosine.xzerox.config.js"></script>
     <script src="../source/cosine.xzerox.js"></script>
+    <script src="../source/cosine.xzerox.tempo.js"></script>
+    <script src="../source/cosine.xzerox.transport.js"></script>
     <script src="../source/cosine.xzerox.services.js"></script>
-    <script src="../source/cosine.treeoflife.actions.js"></script>
     <script src="../source/cosine.xzerox.controllers.js"></script>
 
     <div id="container"></div>
@@ -35,51 +60,55 @@
     <svg id="TreeOfLifeAssets" xmlns="http://www.w3.org/2000/svg" width="0" height="0">
         <defs id="assetsDef">
             <g id="addItem">
-                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
-                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="15" y1="23" x2="15" y2="8"/>
-                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8" y1="15" x2="23" y2="15"/>
+                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"></rect>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="15" y1="23" x2="15" y2="8"></line>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8" y1="15" x2="23" y2="15"></line>
             </g>
             <g id="removeItem">
                 <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
                 <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8" y1="15" x2="23" y2="15"/>
             </g>
-            <g id="nextItem">
+            <g id="closeItem">
                 <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
-                <polygon fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="22.496,23.5 9.505,16 22.496,8.5 "/>
+                <line fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="21.304" y1="21.304" x2="10.697" y2="10.696"/>
+                <line fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="10.697" y1="21.304" x2="21.304" y2="10.696"/>
             </g>
             <g id="prevItem">
                 <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
-                <polygon fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="9.505,8.5
-	22.496,16 9.505,23.5 "/>
+                <polygon fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="22.496,23.5 9.505,16 22.496,8.5 "/>
+            </g>
+            <g id="nextItem">
+                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"></rect>
+                <polygon fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="9.505,8.5 22.496,16 9.505,23.5 "></polygon>
             </g>
             <g id="listItems">
-                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
-                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="7" y1="10" x2="23" y2="10"/>
-                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="7" y1="15" x2="23" y2="15"/>
-                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="7" y1="20" x2="23" y2="20"/>
+                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"></rect>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="7" y1="10" x2="23" y2="10"></line>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="7" y1="15" x2="23" y2="15"></line>
+                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="7" y1="20" x2="23" y2="20"></line>
             </g>
             <g id="savePattern">
                 <g>
-                    <polygon stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="4.3,1 1,4.301
-			1,27.699 4.3,30 27.699,30 30,27.699 30,4.301 27.699,1 		"/>
+                    <polygon fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="4.301,1 1,4.301
+			1,27.698 4.301,30.999 27.7,30.999 31,27.698 31,4.301 27.7,1 		"></polygon>
                     <g>
 
-                        <rect x="8" y="17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="14"/>
+                        <rect x="7.9" y="17.124" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16.201" height="13.875"></rect>
 
-                        <rect x="18" y="17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="5" height="12"/>
+                        <rect x="17.087" y="17.948" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="4.951" height="12.227"></rect>
                     </g>
                 </g>
-                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M28.337,11.801
-		c0,0.827-0.671,1.5-1.5,1.5H5.163c-0.829,0-1.5-0.673-1.5-1.5V5.5c0-0.829,0.671-1.5,1.5-1.5h21.674c0.829,0,1.5,0.671,1.5,1.5
-		V11.801z"/>
+                <path fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M28.337,11.8
+		c0,0.826-0.671,1.5-1.5,1.5H5.164c-0.829,0-1.5-0.674-1.5-1.5V5.5c0-0.83,0.671-1.5,1.5-1.5h21.674c0.829,0,1.5,0.67,1.5,1.5
+		L28.337,11.8L28.337,11.8z"></path>
             </g>
             <g id="uploadPattern">
-                <rect x="0" y="0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
-                <polygon stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="8,22.494 16,9.5 23,22.494 "/>
+                <rect x="0" y="0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"></rect>
+                <polygon stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="8,22.494 16,9.5 23,22.494 "></polygon>
             </g>
         </defs>
     </svg>
-    <svg id="TreeOfLifeAssets_Demo" xmlns="http://www.w3.org/2000/svg">
+    <!-- svg id="TreeOfLifeAssets_Demo" xmlns="http://www.w3.org/2000/svg">
         <use xlink:href="#addItem"/>
         <use xlink:href="#removeItem" x="32" y="0"/>
         <use xlink:href="#nextItem" x="64" y="0"/>
@@ -87,8 +116,29 @@
         <use xlink:href="#listItems" x="128" y="0"/>
         <use xlink:href="#savePattern" x="160" y="0" transform="translate(-160,0) scale(2)" style="stroke: orange; fill: none;"/>
         <use xlink:href="#uploadPattern" x="224" y="0" transform="translate(-224,0) scale(2)" style="stroke: #ffffff; fill: none;"/>
+    </svg -->
+    <svg id="TreeOfLifeTransport" width="460" height="160">
+        <defs>
+            <rect id="xportCtl" width="100" height="100"></rect>
+        </defs>
+        <g id="tempoDisplay">
+            <use xlink:href="#xportCtl" x="30" y="30" id="tapTempo"></use>
+            <use xlink:href="#xportCtl" x="130" y="30" id="cur" class="bpm"></use>
+            <use xlink:href="#xportCtl" x="230" y="30" id="avg" class="bpm"></use>
+            <use xlink:href="#xportCtl" x="330" y="30" id="cum" class="bpm"></use>
+            <use xlink:href="#closeItem" x="430" y="0" id="closeTransport"></use>
+        </g>
+        <g id="tempoModifier">
+            <use xlink:href="#prevItem" id="nudgeDown" x="130" y="30" opacity=".75"></use>
+            <use xlink:href="#nextItem" id="nudgeUp" x="200" y="30" opacity=".75"></use>
+            <use xlink:href="#removeItem" id="bpmDown" x="130" y="100" opacity=".75"></use>
+            <use xlink:href="#addItem" id="bpmUp" x="200" y="100" opacity=".75"></use>
+        </g>
     </svg>
-
+    <div id="labelTap" class="bpmText">Tap</div>
+    <div id="labelCur" class="bpmText">Current</div>
+    <div id="labelAvg" class="bpmText">Average</div>
+    <div id="labelCum" class="bpmText">Cumulative</div>
     <script>
 
         // TODO: Identify the active sequence on init
@@ -104,7 +154,7 @@
         // instantiate: set reference to SVG target
         // init: build shapes, store shapes, get total height/width
         // render
-        (function (views, patternCtl, actionCtl, svg) {
+        (function (svg, views, patternCtl, actionCtl, transport) {
             var container = document.getElementById('container'),
                 host = svg.create.svg({
                         width: 800,
@@ -138,11 +188,16 @@
             patternCtl.init();
             actionCtl.init();
             //action.editor.render();
+
+            // TODO - this should be wired up to a button to launch transport
+            transport.svg = host;
+            transport.show();
         })(
+            cosinedesign.svg,
             cosine.xzerox.views,
             cosine.xzerox.controllers.pattern,
             cosine.xzerox.controllers.action,
-            cosinedesign.svg
+            cosine.xzerox.transport
         );
     </script>
 

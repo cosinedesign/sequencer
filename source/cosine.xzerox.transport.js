@@ -12,20 +12,30 @@
 var cosine = cosine || {};
 cosine.xzerox = cosine.xzerox || {};
 var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
-    var elements,
+    var clock = new tempo.Clock(500),
+        elements,
         initialized = false,
-        ms= {
-            cur: 500,
-            avg: 500,
-            cum: 500
-        },
-        bpms = {
-            cur: 128,
-            avg: 128,
-            cum: 128
+        trackers = {
+            cur: tempo.tracker(120),
+            avg: tempo.tracker(120),
+            cum: tempo.tracker(120)
         },
         intervals = {},
         pulse = 50;
+
+        //ms= {
+        //    cur: 500,
+        //    avg: 500,
+        //    cum: 500
+        //},
+        //
+        //bpms = {
+        //    cur: 128,
+        //    avg: 128,
+        //    cum: 128
+        //},
+
+
 
     function init() {
         elements = {
@@ -54,24 +64,26 @@ var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
         utils.each(elements.bpms, function (bpmDisplay, index, key) {
             var label = elements.labels[key];
             utils.ui.align.center(bpmDisplay, label);
+            var t = trackers[key];
+
+            t.clock.onTick(function () {
+                beat(bpmDisplay);
+            });
 
             // TODO: make this the only active item
             // TODO: and restart the interval when we click it
+            // On click of the specific BPM display in transport...
             utils.ui.addClick(bpmDisplay, function () {
+                exports.activeTracker = t;
+                // TODO: maybe just set active tracker?
                 exports.activeBpm = key;
-                // first, clear this interval
-                clearInterval(intervals[key]);
-                // pulse this element to the beat
-                intervals[key] = setInterval(function () {
-                    beat(bpmDisplay);
-                }, ms[key]);
 
-                // fire one off now, do it nowwww
-                beat(bpmDisplay);
+                // starts / restarts the clock... keeps interval the same
+                t.clock.start();
 
-                // stop all others
-                utils.each(intervals, function (interval, index, k) {
-                    if (!(key==k)) clearInterval(interval);
+                // stop all other clocks
+                utils.each(trackers, function (tracker, index, k) {
+                    if (!(key==k)) tracker.clock.stop();
                 });
 
                 // TODO: position the tempoModifier with translate
@@ -88,42 +100,55 @@ var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
         utils.ui.align.center(elements.tapTempo, label);
 
         elements.tapTempo.addEventListener('click', (function () {
-            var x = new Date();
+            //var x = new Date();
             var tempo = 120,
 
-                lastClickTime = x.getTime(),
+                lastClickTime = Date.now(), //x.getTime(),
                 barClicks = [],
                 avgClicks = [];
 
             return function () {
-                var d = new Date();
-                var t = d.getTime();
-                ms.cur = t - lastClickTime;
+                //var d = new Date();
+                var t = Date.now(); ///.getTime();
+                var curMs = t - lastClickTime,
+                    avgMs, cumMs;
+                trackers.cur.ms = curMs;
+                trackers.cur.clock.start();
                 lastClickTime = t;
-                if (ms.cur) {
-                    barClicks.push(ms.cur);
-                    ms.avg = utils.avg(barClicks);
-                    avgClicks.push(ms.avg);
-                    ms.cum = utils.avg(avgClicks);
+                if (curMs) {
+                    barClicks.push(curMs);
+                    avgMs = utils.avg(barClicks);
+                    trackers.avg.ms = avgMs;
+                    trackers.avg.clock.start();
+                    avgClicks.push(avgMs);
+                    cumMs = utils.avg(avgClicks);
+                    trackers.cum.ms = cumMs;
+                    trackers.cum.clock.start();
                 }
+
+                // restrict our averages...
                 if (barClicks.length > 4) barClicks.shift();
                 if (avgClicks.length > 4) avgClicks.shift();
 
-                utils.each(ms, function (item, key) {
-                    clearInterval(intervals[key]);
-                });
-
-                render();
-                //showTempo();
+                //render();
+                showTempo();
                 event.stopPropagation();
             };
         })());
         initialized = true;
     }
 
-    var bpmIncrement = 5, nudge = 10;
-    function nudgeUp() {}
-    function nudgeDown() {}
+    var bpmIncrement = 5, nudgeIncrement = 10;
+    //var doNudge, doBpm;
+    function nudgeUp() {
+        exports.activeTracker.clock.nudge(nudgeIncrement);
+        //doNudge+=nudgeIncrement;
+    }
+    function nudgeDown() {
+        exports.activeTracker.clock.nudge((nudgeIncrement*-1));
+        //doNudge-=nudgeIncrement;
+    }
+
     function bpmUp() {}
     function bpmDown() {}
 
@@ -132,34 +157,61 @@ var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
         //render();
     }
     function hide() {
-        utils.each(intervals, function (item) {
-            clearInterval(item);
+        utils.each(tracker, function (t) {
+            t.clock.stop();
         });
+        //utils.each(intervals, function (item) {
+        //    clearInterval(item);
+        //});
     }
 
     // show a series of divs with current, avg, overall
     function showTempo() {
-        utils.each(ms, function (item, index, key) {
-            var label = elements.labels[key];
-            label.innerText = tempo.msToBPM(item);
+        utils.each(trackers, function (t, index, key) {
+            elements.labels[key].innerText = t.bpm; //tempo.msToBPM(item);
         });
     }
 
     function render() {
-        utils.blend(elements.bpms, ms, function (el, m, key) {
-            elements.labels[key]
-                .innerText = bpms[key] = tempo.msToBPM(m);
-            clearInterval(intervals[key]);
-            el.style.fill = "#ffcc33";
-            setTimeout(function () {
-                el.style.fill = "";
-            }, pulse);
-            intervals[key] = setInterval(function () {
-                beat(el);
-            }, m);
-        });
+        showTempo();
+
+
+        //utils.blend(elements.bpms, ms, function (el, m, key) {
+        //    elements.labels[key]
+        //        .innerText = bpms[key] = tempo.msToBPM(m);
+        //
+        //    //clearInterval(intervals[key]);
+        //    //el.style.fill = "#ffcc33";
+        //    //setTimeout(function () {
+        //    //    el.style.fill = "";
+        //    //}, pulse);
+        //    //intervals[key] = setInterval(function () {
+        //    //    beat(el);
+        //    //}, m);
+        //});
     }
 
+    //// targetBpm is just the key to the bpm indicator, it is NOT a bpm, reconsider this naming
+    //function run(targetBpm, ms) {
+    //    // TODO: if we're nudging we need to shorten the next interval by exports.nudge amount
+    //    // do we set a timeout at currentMs (+/-) nudge, which then continues an interval? Yes.
+    //    // TODO: if we're changing the interval entirely we need to change that too
+    //    intervals[targetBpm] = setInterval(function () {
+    //        if (doNudge || doBpm) {
+    //            clearInterval(targetBpm);
+    //            if (doNudge) {
+    //                setTimeout(run(targetBpm, ms), doNudge);
+    //            } else if (doBpm) {
+    //
+    //            }
+    //        }
+    //
+    //
+    //        beat(el);
+    //    }, ms);
+    //}
+
+    // pulse the div at specified time
     function beat(el) {
         el.style.fill = "#ffcc33";
         setTimeout(function () {

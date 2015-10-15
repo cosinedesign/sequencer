@@ -1,10 +1,5 @@
 
-TODO Gaps / bugs
-- bar select should highlight the bar button
-- Set a steps action, then click the button bar. I think the code to search back and find the prior step fucks it up
-- Add sequence should add to all bars
-- Set an action to a large step, then divide it by the button bar, not sure if it changes
-
+TODO Gaps / bugs - moved to trello board
 
 TODO Features
 XXX - list patterns

@@ -19,6 +19,16 @@ cosine.xzerox.config = {
         border: 2,
             size: 30
     },
+    commands: {
+        active: {
+            stroke: 'white',
+            fill: '#000000'
+        },
+        inactive: {
+            stroke: '#333333',
+            fill: '#000000'
+        }
+    },
     actions: {
         active: {
             stroke: 'white'

@@ -2,24 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title></title>
+    <title>:: Tree Of Life :: XZEROX Sequencer by cosinezero ::</title>
     <style>
         body {
             background: #000000;
             color: #999999;
             font: 12px arial;
         }
+        table.list {
+            padding: 5px;
+            width: 100%;
+        }
+        .list th {
+            text-align: left;
+            padding: 5px;
+            font: 15pt arial;
+        }
+        .list td {
+            padding: 5px;
+            font: 12pt arial;
+        }
         #container {
-            border: 1px solid orange;
+            /*border: 1px solid orange;*/
+            text-align: center;
         }
         #actionEditor {
             width: 153px;
             border: 1px solid orange;
         }
-
+        .dialog {
+            background-color: black;
+            width: 600px;
+            height: 400px;
+            border: 2px solid orange;
+            overflow-y: auto;
+            overflow-x: auto;
+            padding: 10pt;
+        }
         /* Transport ********************************************************/
         #TreeOfLifeTransport {
-            width: 600px;
+            display: none;
+            /*width: 600px;*/
             height: 200px;
         }
         #tapTempo {
@@ -60,13 +83,13 @@
     <svg id="TreeOfLifeAssets" xmlns="http://www.w3.org/2000/svg" width="0" height="0">
         <defs id="assetsDef">
             <g id="addItem">
-                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"></rect>
-                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="15" y1="23" x2="15" y2="8"></line>
-                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8" y1="15" x2="23" y2="15"></line>
+                <rect x="0" y="0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"></rect>
+                <line stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="15" y1="23" x2="15" y2="8"></line>
+                <line stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8" y1="15" x2="23" y2="15"></line>
             </g>
             <g id="removeItem">
-                <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
-                <line stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8" y1="15" x2="23" y2="15"/>
+                <rect x="0" y="0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
+                <line stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x1="8" y1="15" x2="23" y2="15"/>
             </g>
             <g id="closeItem">
                 <rect x="0" y="0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"/>
@@ -89,22 +112,49 @@
             </g>
             <g id="savePattern">
                 <g>
-                    <polygon fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="4.301,1 1,4.301
-			1,27.698 4.301,30.999 27.7,30.999 31,27.698 31,4.301 27.7,1 		"></polygon>
+                    <polygon stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="27.7,31
+			31,27.698 31,4.3 27.7,1 4.3,1 1,4.3 1,27.698 4.3,31 		"></polygon>
                     <g>
 
-                        <rect x="7.9" y="17.124" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16.201" height="13.875"></rect>
+                        <rect x="7.899" y="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16.202" height="13.875"></rect>
 
-                        <rect x="17.087" y="17.948" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="4.951" height="12.227"></rect>
+                        <rect x="17.087" y="1.824" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="4.951" height="12.227"></rect>
                     </g>
                 </g>
-                <path fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M28.337,11.8
-		c0,0.826-0.671,1.5-1.5,1.5H5.164c-0.829,0-1.5-0.674-1.5-1.5V5.5c0-0.83,0.671-1.5,1.5-1.5h21.674c0.829,0,1.5,0.67,1.5,1.5
-		L28.337,11.8L28.337,11.8z"></path>
+                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M28.337,20.199l0.001,6.3
+		c0,0.83-0.671,1.5-1.5,1.5H5.164c-0.829,0-1.5-0.67-1.5-1.5v-6.3c0-0.826,0.671-1.5,1.5-1.5h21.673
+		C27.666,18.699,28.337,19.373,28.337,20.199L28.337,20.199z"></path>
             </g>
             <g id="uploadPattern">
                 <rect x="0" y="0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"></rect>
                 <polygon stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="8,22.494 16,9.5 23,22.494 "></polygon>
+            </g>
+            <g id="pause">
+                <rect x="9.438" y="8.5" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="5" height="15"/>
+                <rect x="17.563" y="8.5" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="5" height="15"/>
+            </g>
+            <g id="cue">
+                <rect x="0" y="0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="30" height="30"></rect>
+                <polygon stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="16.25,8.5
+		23.875,16 16.25,23.5 	"/>
+
+                <rect x="8.125" y="8.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="5" height="15"/>
+            </g>
+            <g id="iconCamera">
+                <g>
+                    <path d="M25.676,3.784h-1.232V3.514c0-0.747-0.605-1.352-1.352-1.352S21.74,2.767,21.74,3.514v0.271h-2.821V1.352
+		C18.919,0.604,18.314,0,17.568,0H9.46C8.713,0,8.108,0.604,8.108,1.352v2.433H1.352C0.605,3.784,0,4.389,0,5.135v13.514
+		C0,19.396,0.605,20,1.352,20h24.324c0.747,0,1.352-0.604,1.352-1.352V5.135C27.027,4.389,26.423,3.784,25.676,3.784z"></path>
+                    <rect x="9.46" y="1.352" stroke="none" fill="#FFFFFF" width="8.108" height="2.702"></rect>
+                    <path fill="#FFFFFF" stroke="none" d="M7.162,12.162c0,3.502,2.85,6.352,6.352,6.352s6.352-2.85,6.352-6.352s-2.85-6.352-6.352-6.352
+		S7.162,8.66,7.162,12.162z M9.055,12.162c0-2.459,2-4.459,4.459-4.459s4.46,2,4.46,4.459s-2.001,4.46-4.46,4.46
+		S9.055,14.621,9.055,12.162z"></path>
+                </g>
+            </g>
+            <g id="iconVideo">
+                <path d="M26.559,1.801c-0.291-0.168-0.648-0.168-0.938,0L18.919,5.67V3.243c0-0.746-0.604-1.352-1.352-1.352H1.352
+	C0.605,1.892,0,2.497,0,3.243v13.514c0,0.746,0.605,1.352,1.352,1.352h16.216c0.747,0,1.352-0.605,1.352-1.352V14.33l6.701,3.869
+	c0.29,0.168,0.647,0.168,0.938,0c0.29-0.168,0.469-0.478,0.469-0.813V2.613C27.027,2.278,26.849,1.969,26.559,1.801z"></path>
             </g>
         </defs>
     </svg>
@@ -129,10 +179,10 @@
             <use xlink:href="#closeItem" x="430" y="0" id="closeTransport"></use>
         </g>
         <g id="tempoModifier">
-            <use xlink:href="#prevItem" id="nudgeDown" x="130" y="30" opacity=".75"></use>
-            <use xlink:href="#nextItem" id="nudgeUp" x="200" y="30" opacity=".75"></use>
-            <use xlink:href="#removeItem" id="bpmDown" x="130" y="100" opacity=".75"></use>
-            <use xlink:href="#addItem" id="bpmUp" x="200" y="100" opacity=".75"></use>
+            <use xlink:href="#prevItem" id="nudgeDown" stroke="#ffffff" fill="#000000" x="130" y="30" opacity=".75"></use>
+            <use xlink:href="#nextItem" id="nudgeUp" stroke="#ffffff" fill="#000000" x="200" y="30" opacity=".75"></use>
+            <use xlink:href="#removeItem" id="bpmDown" stroke="#ffffff" fill="#000000" x="130" y="100" opacity=".75"></use>
+            <use xlink:href="#addItem" id="bpmUp" stroke="#ffffff" fill="#000000" x="200" y="100" opacity=".75"></use>
         </g>
     </svg>
     <div id="labelTap" class="bpmText">Tap</div>
@@ -144,11 +194,6 @@
         // TODO: Identify the active sequence on init
         // TODO: When active sequence changes, button bar should re-render
         // TODO: Render action's colors (gradients, et al)
-        // TODO:
-        // TODO: Each view should remember svg objects created, so they can destroy / re-render just changed items
-        // TODO: create an 'onBarChange' event that re-renders the bar
-
-
 
         // lifecycle
         // instantiate: set reference to SVG target
@@ -157,14 +202,14 @@
         (function (svg, views, patternCtl, actionCtl, transport) {
             var container = document.getElementById('container'),
                 host = svg.create.svg({
-                        width: 800,
+                        width: 711,
                         height: 600,
                         fill: '#00FF00',
                         shapes: [],
-                        gradients: [ {id: 'pinkMorph', stops: [
-                            { id: 1, offset: "30%", "stop-color": "white" },
-                            { id: 2, offset: "90%", "stop-color": "#FF00FF" }]}
-                        ],
+//                        gradients: [ {id: 'pinkMorph', stops: [
+//                            { id: 1, offset: "30%", "stop-color": "white" },
+//                            { id: 2, offset: "90%", "stop-color": "#FF00FF" }]}
+//                        ],
                         onShapeCreated: function (item, index) {
                             utils.ui.addClick(item, function () {
                                 buttonClick(item, index);
@@ -178,20 +223,23 @@
             views.buttonBar.el = container;
 
             // Assign the SVG host element
+            transport.svg = host;
             views.barSelect.svg = host;
             views.menuBar.svg = host;
+            views.menuBar.cueTransportClick = transport.show;
+            //transport.hide();
+
             views.buttonBar.svg = host;
             views.bar.svg = host;
             views.actionList.svg = host;
+
             views.actionList.defs = host.firstChild;
 
             patternCtl.init();
             actionCtl.init();
             //action.editor.render();
 
-            // TODO - this should be wired up to a button to launch transport
-            transport.svg = host;
-            transport.show();
+
         })(
             cosinedesign.svg,
             cosine.xzerox.views,

@@ -12,14 +12,277 @@
     x0x.controllers = {};
 
     // TODO: Move these to inside the patternController
-    var i,
-        buttonSize = config.grid.size + (config.grid.border * 2),
-        offset = config.grid.border;
+    var buttonSize = config.grid.size + (config.grid.border * 2);
 
+    function createCell(value, parentTr, isTh) {
+        var cell = utils.ui.create.element(isTh?'th':'td', parentTr);
+        cell.innerText = value;
+        return cell;
+    }
+
+    function createFormRow (label, input, parent) {
+        var create = utils.ui.create;
+        var tr = create.element('tr', parent);
+        var cell = create.element('th', tr);
+        cell.innerText = label;
+        var field = create.element('td', tr);
+        field.appendChild(input);
+        return tr;
+    }
+
+    // TODO: this is definitely needing work
+    function createButtonRow (buttons, parent, colspan) {
+        var create = utils.ui.create;
+        var tr = create.element('tr', parent);
+        var td = create.element('td', tr);
+        if (colspan) td.setAttribute('colspan', colspan);
+
+        var d = create.element('div', td);
+        d.style.width = '33%';
+        d.style.display = 'inline-block';
+        d = create.element('div', td);
+        d.style.width = '33%';
+        d.style.display = 'inline-block';
+
+        utils.each(buttons, function (but) {
+            var col = create.element('div', d);
+            col.style.width = '50%';
+            col.style.display = 'inline-block';
+            col.appendChild(but);
+        });
+        d = create.element('div', td);
+        d.style.width = '33%';
+        d.style.display = 'inline-block';
+
+        return tr;
+    }
+    //
+    var demoPatternList = [{
+            name: "test 1",
+            author: "jim@gmail.com",
+            camp: "DANCE CAMP",
+            description: "",
+            key: 325873057 // use date.now()
+        },{
+            name: "test 3",
+            author: "jim@gmail.com",
+            camp: "DANCE CAMP",
+            description: "",
+            key: 325873057
+        },{
+            name: "test 2",
+            author: "jim@gmail.com",
+            camp: "DANCE CAMP",
+            description: "",
+            key: 325873057
+        },
+            {
+                name: "test 1",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057 // use date.now()
+            },{
+                name: "test 3",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057
+            },{
+                name: "test 2",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057
+            },
+            {
+                name: "test 1",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057 // use date.now()
+            },{
+                name: "test 3",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057
+            },{
+                name: "test 2",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057
+            },{
+                name: "test 1",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057 // use date.now()
+            },{
+                name: "test 3",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057
+            },{
+                name: "test 2",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057
+            },{
+                name: "test 1",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057 // use date.now()
+            },{
+                name: "test 3",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057
+            },{
+                name: "test 2",
+                author: "jim@gmail.com",
+                camp: "DANCE CAMP",
+                description: "",
+                key: 325873057
+            }
+        ];
+
+
+
+    //-----------------------------------------------------------------------------------Pattern List
     patternListController = {
+        patternList: [],// demoPatternList, //services.pattern.load('list'),
         actions: {
-            list: function () {},
-            save: function () {},
+            list: function () {
+                var ctrl = patternListController;
+                var d = ctrl.elList = utils.ui.create.element('div', document.body);
+                d.id = 'patternList';
+                var title = utils.ui.create.element('div', d);
+                title.innerHTML = "<h1>Load Pattern</h1><h3>Select a pattern:</h3>";
+
+                d.className = 'dialog';
+
+                var t = utils.ui.create.element('table', ctrl.elList);
+                t.className = 'list';
+
+                var h = utils.ui.create.element('tr', t);
+                createCell('Name', h, 1);
+                createCell('Bars', h, 1);
+                createCell('Author', h, 1);
+                createCell('Camp', h, 1);
+
+                utils.each(ctrl.patternList, function (p) {
+                    var r = utils.ui.create.element('tr', t);
+                    r.className = 'list';
+                    createCell(p.name, r);
+                    createCell(p.bars, r);
+                    createCell(p.author, r);
+                    createCell(p.camp, r);
+
+                    utils.ui.addClick(r, function () {
+                        document.body.removeChild(d);
+                        ctrl.actions.load(p.key);
+                    });
+                });
+
+                utils.ui.align.center(views.bar.svg, d);
+            },
+            showSaveForm: function () {
+                var create = utils.ui.create;
+                var d = create.element('div', document.body);
+                d.className = 'dialog';
+                var title = utils.ui.create.element('div', d);
+                title.innerHTML = "<h1>Save Pattern</h1><h3>Please enter the following:</h3>";
+
+                var t = utils.ui.create.element('table', d);
+                t.className = 'list';
+
+                var form = {
+                    name: create.input({ type: 'text'}),
+                    author: create.input({ type: 'text'}),
+                    camp: create.input({ type: 'text'})
+                    },
+                    labels = {
+                        name: "Name",
+                        author: "Author",
+                        camp: "Camp"
+                    },
+                    buttons = {
+                        butSave: create.input({
+                            type: 'button',
+                            value: 'OK',
+                            events: {
+                                click: function () {
+                                    var model = {}, invalid = {}, hasErrors = false;
+                                    // load data into model and validate
+                                    utils.each(form, function (item, index, key) {
+                                        if (!item.value) {
+                                            hasErrors = true;
+                                            invalid[key] = item;
+                                        } else {
+                                            model[key] = item.value;
+                                        }
+                                    });
+
+                                    if (hasErrors) {
+                                        var message = "Please enter the following information: \n";
+                                        utils.each(invalid, function (item, index, key) {
+                                            message += "\n- " + labels[key];
+                                        });
+
+                                        alert(message);
+                                    } else {
+                                        model.key = Date.now();
+                                        patternListController.actions.save(model);
+                                        document.body.removeChild(d);
+                                    }
+                                }
+                            }
+                        }),
+                        butCancel: create.input({
+                            type: 'button',
+                            value: 'Cancel',
+                            events: {
+                                click: function () {
+                                    document.body.removeChild(d);
+                                }
+                            }
+                        })
+                    };
+
+                createFormRow("Name:", form['name'], t);
+                createFormRow("Author:", form['author'], t);
+                createFormRow("Camp:", form['camp'], t);
+                createButtonRow(buttons, t, 2);
+
+                utils.ui.align.center(views.bar.svg, d);
+            },
+            load: function (key) {
+                var pattern = services.pattern.load(key);
+            },
+            save: function (model) {
+                // TODO: save actionDefs
+
+                var p = patternController.activePattern;
+                model.bars = p.bars.length;
+
+                patternListController.patternList.push(utils.clone(model));
+                services.pattern.save('list', patternListController.patternList);
+
+
+                model.pattern = patternController.activePattern;
+
+                services.pattern.save(model.key, model);
+
+                if (debug) console.log('pattern ' + model.key + ' saved!');
+                alert('Pattern ' + model.name + ' saved!');
+                return model.key;
+            },
             upload: function () {
                 alert('upload');
                 // TODO: call server's upload method
@@ -33,10 +296,12 @@
 
     views.barSelect.on('barSelectorCreated', function (s, selectedBar, barIndex) {
         utils.ui.addClick(s, function () {
+            views.barSelect.setActive(barIndex);
             var bar = views.bar;
             bar.bar = selectedBar;
             bar.clear();
             bar.render();
+            // TODO: set the bar selector button to active
             // TODO: set the active sequence too
             // TODO: we also have to re-render the buttonBar...
             //
@@ -44,7 +309,7 @@
             //views.buttonBar.activeSequence = this.activeSequence;
             //views.buttonBar.position(bar);
             //views.buttonBar.render();
-            setActiveSequence(getViewForSequence(0));
+            setActiveSequence(getViewForSequence(patternController.activeSequenceIndex));
         });
     });
 
@@ -96,21 +361,65 @@
         });
     });
 
-    // this could just be a 'addSequenceClick' event
+    views.barSelect.addBarClick = function () {
+
+        // TODO: add new empty sequence for each in the previous bar
+        var bars = patternController.activePattern.bars,
+            select = views.barSelect;
+        var len = bars.length;
+        if (len == 8) {
+            return;
+        }
+
+        // One bar becomes 2. 2 becomes 4. 4 becomes 8 (stop there)
+        // so let's create a new bar for each existing bar
+        var newBar;
+        utils.each(bars, function (bar, index) {
+            newBar = { sequences: [] };
+            // iterate over the last bar's sequences and add empty sequence to each
+            utils.each(bar.sequences, function (item) {
+                newBar.sequences.push(utils.clone(item));
+            });
+            bars.push(newBar);
+        });
+
+
+        // Now render the lot
+        select.clear();
+        select.init();
+        select.render();
+        // Setting len as the active bar,
+        // because that will effectively be the first new bar
+        select.setActive(len);
+        // TODO - have to set the bar to the view
+
+        // render the new bar
+        views.bar.clear();
+        views.bar.bar = bars[len];
+        views.bar.render();
+        setActiveSequence(getViewForSequence(patternController.activeSequenceIndex));
+    };
+
+    function addEmptySequence() {
+        var s = services.pattern.buildSequence(),
+            bars = patternController.activePattern.bars;
+
+        utils.each(bars, function (bar, index) {
+            bar.sequences.push(utils.clone(s));
+        });
+
+        return s;
+    }
+
+    // Add sequence to current patter.
     views.buttonBar.addSequenceClick = function () {
         var b = views.bar,
-            s = [
-                {step: 0},
-                {step: 4},
-                {step: 8},
-                {step: 12}
-            ];
+            s = services.pattern.buildSequence();
 
-        patternController.activePattern.bars[0].sequences.push(s);
         // set this as selected sequence
-        patternController.activeSequence = s;
-        // re-run init
+        patternController.activeSequence = addEmptySequence();
 
+        // re-run init
         var sV = b.addSequenceView(s, patternController.activePattern.bars[0].sequences.length-1);
 
         b.renderView(sV);// { x: b.x, y: b.y });
@@ -168,7 +477,8 @@
 
     // TODO: this should be based on the sequence index
     function setActiveSequence(view) {
-        var b = views.bar,
+        var pc = patternController,
+            b = views.bar,
             buttons = views.buttonBar;
 
         if (b.selectedSequenceView) {
@@ -178,15 +488,59 @@
         buttons.activeSequence = b.selectedSequence = view.sequence;
         buttons.update();
         b.selectedSequenceView = view;
-        patternController.activeSequence = view.sequence;
-        patternController.activeSequenceIndex = view.sequenceIndex;
+        pc.activeSequence = view.sequence;
+        pc.activeSequenceIndex = view.sequenceIndex;
         view.select.button.style.fill = config.sequence.selected.fill;
 
         // Remove Sequence
         if (!b.removeSequenceButton) {
-            b.removeSequenceButton = svg.create.use(b.selectedSequenceView.svg, { id: 'removeItem'}, { x: b.selectedSequenceView.x + config.grid.border, y: b.selectedSequenceView.y + config.grid.border });
+            b.removeSequenceButton = svg.create.use(b.selectedSequenceView.svg, { id: 'removeItem'}, {
+                    x: b.selectedSequenceView.x + config.grid.border,
+                    y: b.selectedSequenceView.y + config.grid.border
+                },
+                null,
+                {
+                    stroke: config.commands.active.stroke,
+                    fill: config.commands.active.fill
+                });
+            utils.ui.addClick(b.removeSequenceButton, confirmDeleteActiveSequence);
+        }
+        // disable if this is the last one
+        if (!(pc.activePattern.bars[0].sequences.length-1)) {
+            b.removeSequenceButton.style.stroke = config.commands.inactive.stroke;
+        } else {
+            b.removeSequenceButton.style.stroke = config.commands.active.stroke;
         }
         b.removeSequenceButton.y.baseVal.value = view.y + config.grid.border;
+    }
+
+    function confirmDeleteActiveSequence() {
+        var pc = patternController;
+        if (pc.activePattern.bars[0].sequences.length) {
+            var r = confirm("Delete this sequence from the pattern? Doing so will remove it from all bars in this pattern.");
+            if (r == true) {
+
+                var bars = pc.activePattern.bars;
+                var lastIndex = bars[0].sequences.length - 1;
+                // delete the sequence from all bars
+                utils.each(pc.activePattern.bars, function (bar) {
+                    bar.sequences.splice(pc.activeSequenceIndex, 1);
+                });
+                // set next to active, or if that's the last sequence, use the prior one.
+                // if it's zero do nothing
+                if (pc.activeSequenceIndex == lastIndex && (lastIndex)) {
+                    pc.activeSequenceIndex--;
+                }
+                lastIndex = pc.activeSequenceIndex;
+                patternController.reset();
+                patternController.init();
+                var bb = views.buttonBar;
+
+                views.buttonBar.move({x: bb.x, y: bb.y + config.grid.border});
+                setActiveSequence(getViewForSequence(lastIndex));
+                // TODO HERE re-render the pattern view
+            }
+        }
     }
 
     function getViewForSequence(index) {
@@ -213,12 +567,11 @@
         },
         init: function () {
             // get the pattern, and activeSequence
-            var pattern = ''; //TODO: patternBank.get('default');
+            var pattern; //TODO: patternBank.get('default');
 
-            if (!pattern) {
-                // TODO: Create a service default method, that calls build, then save
+            if (!this.activePattern) {
                 pattern = services.pattern.build({ name: "default" });
-                services.pattern.save();
+                //services.pattern.save();
 
                 this.activePattern = pattern;
             }
@@ -229,6 +582,9 @@
                 barSelect = views.barSelect,
                 bar = views.bar,
                 menu = views.menuBar;
+
+            this.listPattern = svg.create.use(bar.svg, { id: 'listItems'}, { x: startPosition.x + config.grid.border, y: startPosition.y + config.grid.border });
+            utils.ui.addClick(this.listPattern, patternListController.actions.list);
 
             barSelect.pattern = this.activePattern;
             barSelect.position(startPosition);
@@ -241,7 +597,7 @@
                 x: barSelect.x + config.grid.size + (config.grid.border*2),
                 y: barSelect.y
             });
-            menu.savePatternClick = patternListController.actions.save;
+            menu.savePatternClick = patternListController.actions.showSaveForm;
             menu.uploadPatternClick = patternListController.actions.upload;
             menu.render();
 
@@ -261,6 +617,11 @@
 
             // Find the sequence view and make it active
             setActiveSequence(getViewForSequence(0));
+        },
+        reset: function () {
+            views.barSelect.clear();
+            views.bar.clear();
+            views.buttonBar.clear();
         },
         // these are CONTROLLER ACTIONS, not "actions" in the sequencer sense
         actions: {
@@ -305,36 +666,40 @@
         init: function () {
             // TODO: uncomment the below when ready:
             //this.actions = services.actions.load();
-            // TODO: NO! ALL WRONG! CAN'T NAME THIS ACTIONS!
-            this.actionPresets = [{
-                name: 'Go Black',
-                type: 'setColor',
-                options: {
-                    color: "#000000"
-                }
-            },
-                {
-                name: 'Morph Color',
-                type: 'morphColor',
-                options: {
-                    color1:  "#FFFFFF",
-                    color2: "#000000"
-                }
-            },{
-                name: 'Morph Color',
-                type: 'morphColor',
-                options: {
-                    color1:  "#FF0000",
-                    color2: "#FF00FF"
-                }
-            },{
-                name: 'Morph Color',
-                type: 'morphColor',
-                options: {
-                    color1:  "#FF00FF",
-                    color2: "#0000FF"
-                }
-            }];
+            this.actionPresets = services.actions.load('presets') || [{
+                    name: 'Go Black',
+                    type: 'setColor',
+                    options: {
+                        color: "#000000"
+                    }
+                }, {
+                    name: 'Strobe White',
+                    type: 'strobe',
+                    options: {
+                        color: "#ffffff"
+                    }
+                }, {
+                    name: 'Morph Color',
+                    type: 'morphColor',
+                    options: {
+                        color1:  "#FFFFFF",
+                        color2: "#000000"
+                    }
+                }, {
+                    name: 'Morph Color',
+                    type: 'morphColor',
+                    options: {
+                        color1:  "#FF0000",
+                        color2: "#FF00FF"
+                    }
+                }, {
+                    name: 'Morph Color',
+                    type: 'morphColor',
+                    options: {
+                        color1: "#FF00FF",
+                        color2: "#0000FF"
+                    }
+                }];
 
             if (!this.actionPresets) {
                 this.actionPresets = [];
@@ -410,6 +775,9 @@
                     // otherwise, we're adding.
                     actionController.actionPresets.push(utils.clone(newAction));
                 }
+
+                services.actions.save('presets', actionController.actionPresets);
+
                 views.actionList
                     .clear()
                     .init()

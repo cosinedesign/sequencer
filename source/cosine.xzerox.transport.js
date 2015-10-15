@@ -1,13 +1,8 @@
 /**
  * Created by cosinezero on 10/12/2015.
  */
-// TODO: add 'nudge' and 'drag', to shorten/lengthen tempo slightly
 // TODO: add 'phase' to modify tempo offset
 // TODO: add midi API access to local devices...
-
-// TODO: clicking on a bpm element makes it 'active'
-
-
 
 var cosine = cosine || {};
 cosine.xzerox = cosine.xzerox || {};
@@ -20,6 +15,7 @@ var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
             avg: tempo.tracker(120),
             cum: tempo.tracker(120)
         },
+        activeTracker = null,
         intervals = {},
         pulse = 50;
 
@@ -51,10 +47,34 @@ var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
             }
         };
 
-        utils.ui.addClick(document.getElementById('nudgeUp'), nudgeUp);
-        utils.ui.addClick(document.getElementById('nudgeDown'), nudgeDown);
-        utils.ui.addClick(document.getElementById('bpmUp'), bpmUp);
-        utils.ui.addClick(document.getElementById('bpmDown'), bpmDown);
+        utils.ui.addClick(document.getElementById('nudgeUp'), function () {
+            if (activeTracker) {
+                activeTracker.clock.nudgeUp();
+                event.stopPropagation();
+            }
+        });
+        utils.ui.addClick(document.getElementById('nudgeDown'), function () {
+            if (activeTracker) {
+                activeTracker.clock.nudgeDown();
+                event.stopPropagation();
+            }
+        });
+        utils.ui.addClick(document.getElementById('bpmUp'), function () {
+            if (activeTracker) {
+                activeTracker.bpmUp();
+                showTempo();
+                event.stopPropagation();
+            }
+        });
+        utils.ui.addClick(document.getElementById('bpmDown'), function () {
+            if (activeTracker) {
+                activeTracker.bpmDown();
+                showTempo();
+                event.stopPropagation();
+            }
+        });
+
+        utils.ui.addClick(document.getElementById('closeTransport'), transport.hide);
 
         if (exports.svg) {
             utils.ui.align.center(exports.svg, elements.transport);
@@ -70,30 +90,24 @@ var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
                 beat(bpmDisplay);
             });
 
-            // TODO: make this the only active item
-            // TODO: and restart the interval when we click it
+            // make this the only active item
+            // and restart the interval when we click it
             // On click of the specific BPM display in transport...
             utils.ui.addClick(bpmDisplay, function () {
-                exports.activeTracker = t;
-                // TODO: maybe just set active tracker?
-                exports.activeBpm = key;
-
+                // set that tracker to active
+                activeTracker = t;
                 // starts / restarts the clock... keeps interval the same
                 t.clock.start();
-
                 // stop all other clocks
                 utils.each(trackers, function (tracker, index, k) {
                     if (!(key==k)) tracker.clock.stop();
                 });
 
-                // TODO: position the tempoModifier with translate
-                //svg.align.center(bpmDisplay, elements.modifier);
+                // position the tempoModifier with translate
                 var width = 100;
                 var x = (width * (index+1))-width;
                 elements.modifier.setAttribute('transform', 'translate(' + x + ',0)');
-
             });
-
         });
 
         var label = elements.labels['tapTempo'];
@@ -138,28 +152,16 @@ var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
         initialized = true;
     }
 
-    var bpmIncrement = 5, nudgeIncrement = 10;
-    //var doNudge, doBpm;
-    function nudgeUp() {
-        exports.activeTracker.clock.nudge(nudgeIncrement);
-        //doNudge+=nudgeIncrement;
-    }
-    function nudgeDown() {
-        exports.activeTracker.clock.nudge((nudgeIncrement*-1));
-        //doNudge-=nudgeIncrement;
-    }
-
-    function bpmUp() {}
-    function bpmDown() {}
-
     function show() {
         if (!initialized) init();
         //render();
+        elements.transport.style.display = "block";
     }
     function hide() {
-        utils.each(tracker, function (t) {
+        utils.each(trackers, function (t) {
             t.clock.stop();
         });
+        elements.transport.style.display = "none";
         //utils.each(intervals, function (item) {
         //    clearInterval(item);
         //});
@@ -174,8 +176,6 @@ var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
 
     function render() {
         showTempo();
-
-
         //utils.blend(elements.bpms, ms, function (el, m, key) {
         //    elements.labels[key]
         //        .innerText = bpms[key] = tempo.msToBPM(m);
@@ -218,7 +218,6 @@ var transport = cosine.xzerox.transport = (function (utils, svg, tempo) {
             el.style.fill = "";
         }, pulse);
     }
-
 
     var exports = {
         show: show,

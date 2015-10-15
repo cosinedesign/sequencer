@@ -189,6 +189,32 @@ cosine.treeOfLife.actions = (function (renderers, color, svg) {
                 // TODO: set interval to hide this after nnn time
             }
         })
+        //,photo: actionDef({
+        //    name: 'Photo',
+        //    type: 'photo',
+        //    schema: {},
+        //    render: function (defs, shape, options) {
+        //        shape.style.fill = '#ffffff';
+        //        svg.create.text(shape.parentNode, "CAMP", { x: shape.x.baseVal.value + 10 , y: shape.y.baseVal.value + 10, width: 40, height: 15, fill: '#000000' });
+        //    },
+        //    action: function () {
+        //        cosine.treeOfLife.toolkit.showGroup('CAMP', "CAMP-DANCE");
+        //        // TODO: set interval to hide this after nnn time
+        //    }
+        //})
+        //,video: actionDef({
+        //name: 'Photo',
+        //type: 'photo',
+        //schema: {},
+        //render: function (defs, shape, options) {
+        //    shape.style.fill = '#ffffff';
+        //    svg.create.text(shape.parentNode, "CAMP", { x: shape.x.baseVal.value + 10 , y: shape.y.baseVal.value + 10, width: 40, height: 15, fill: '#000000' });
+        //},
+        //action: function () {
+        //    cosine.treeOfLife.toolkit.showGroup('CAMP', "CAMP-DANCE");
+        //    // TODO: set interval to hide this after nnn time
+        //}
+        //})
     };
 
     // strobe/Flash

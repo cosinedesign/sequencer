@@ -7,6 +7,7 @@
 var cosine = cosine || {};
 cosine.xzerox = cosine.xzerox || {};
 cosine.xzerox.tempo = (function (utils) {
+    var debug = false;
     return {
         msToBPM: utils.memoize(function (ms) {
             if (ms) {
@@ -18,7 +19,15 @@ cosine.xzerox.tempo = (function (utils) {
         }),
         tracker: function (bpm) {
             var self = this,
-                t = {};
+                t = {
+                    increment:.02,
+                    bpmUp: function () {
+                        this.bpm+=this.increment;
+                    },
+                    bpmDown: function () {
+                        this.bpm-=this.increment;
+                    }
+                };
 
             // TODO create an ms property that when you set it, it updates the clock
             var _ms = 60000/bpm;
@@ -58,7 +67,37 @@ cosine.xzerox.tempo = (function (utils) {
                 offset,
                 timeout;
 
-            this.nudge = function (offset) {};
+            this.bpmIncrementInMs = 10;
+            this.nudgeIncrement = 10;
+
+            //var doNudge, doBpm;
+            this.nudgeUp = function () {
+                this.nudge(this.nudgeIncrement);
+                if (debug) console.log('nudge up');
+            };
+
+            this.nudgeDown = function () {
+                this.nudge((this.nudgeIncrement*-1));
+                if (debug) console.log('nudge down');
+            };
+
+            this.nudge = function (amount) {
+                currentTime = Date.now();
+                // add or subtract offset from next time
+                // this is now offset from where we are now to (old) next time
+                offset = (nextTime-currentTime);
+                // now we can set the new (nudged) next time
+                nextTime = nextTime + amount;
+
+                clearTimeout(timeout);
+                if (offset < (amount * 2)) {
+                    tick();
+                } else {
+                    // update the existing timeout for the new, nudged offset
+                    timeout = setTimeout(tick, (nextTime-currentTime));
+                }
+                return this;
+            };
 
             this.stop = function () {
                 clearTimeout(timeout);
@@ -70,28 +109,33 @@ cosine.xzerox.tempo = (function (utils) {
                 nextTime = currentTime + tickDuration;
                 timeout = setTimeout(tick, tickDuration);
                 if (_tick) _tick();
+                return this;
             };
 
             this.duration = function (duration) {
                 // try to set this RIGHT NOW
                 if (timeout) clearTimeout(timeout);
                 tickDuration = duration;
+                // find the NEW next time
                 nextTime = currentTime + duration;
-                // find out how far off we are from new interval
-                offset = (currentTime - nextTime);
+                // find out how far off we are NOW from new interval
+                offset = (nextTime - Date.now());
                 // maybe tick right now if we're really close
                 if (offset < 10) {
-                    if (_tick) _tick();
+                    //if (_tick) _tick();
                     // update next time to be the really next time
                     nextTime = nextTime + tickDuration;
+                    tick();
                 } else {
-                    // fire next shot!
-                    timeout = setTimeout(tick, tickDuration-offset);
+                    // fire next shot
+                    timeout = setTimeout(tick, offset);
                 }
+                return this;
             };
 
             this.onTick = function (callback) {
                 _tick = callback;
+                return this;
             };
 
             // the re-entrant active clock

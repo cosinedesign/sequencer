@@ -18,6 +18,9 @@ cosine.xzerox.services = (function (utils) {
         }
 
         var service = {
+            remove: function () {
+                store.remove();
+            },
             load: function (name) {
                 return ensured()[name];
             },
@@ -45,8 +48,8 @@ cosine.xzerox.services = (function (utils) {
 
     var pattern = generic('xzerox.pattern');
     // Factories
-    pattern.buildSequence = function () {
-        return [
+    pattern.buildSequence = function (options) {
+        return options || [
             {step: 0},
             {step: 4},
             {step: 8},
@@ -77,7 +80,7 @@ cosine.xzerox.services = (function (utils) {
         return {
             name: options.name,
             bars: [
-                this.buildBar(options) //,
+                this.buildBar(options)//,
                 //this.buildBar(options)
             ]
         };
